@@ -1,0 +1,11 @@
+version: '3.2'
+services:
+  postgres:
+    container_name: postgres-dev
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=db_user
+      - POSTGRES_PASSWORD=pass
+    ports:
+      - 7080:5432
