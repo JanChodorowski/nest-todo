@@ -7,7 +7,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   username: 'db_user',
   password: 'pass',
   database: 'taskmanagement',
-  // entities: [__dirname + '../**/*.entity.ts'], // not supported by wepack below alternative
-  autoLoadEntities: true,
   synchronize: true,
+  entities: ["dist/**/*.entity{.ts,.js}"],
 }

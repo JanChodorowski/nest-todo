@@ -1,44 +1,52 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
 // import { Task, TaskStatus } from './task.model';
-import * as uuid from 'uuid/v1';
 import {CreateTaskDto} from './dto/create-task.dto';
+import { Task } from './task.entity'
+// import { Repository } from 'typeorm';
+// import { TaskStatus } from './types/taskStatus';
+import { TaskRepository } from './tasks.repository';
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [];
 
-  getAllTasts(): Task[] {
-    return this.tasks;
-  }
+  constructor(
+     @InjectRepository(TaskRepository)
+     private taskRepository: TaskRepository,
+  ){}
 
-  createTask(createTaskDto: CreateTaskDto): Task {
-    const {title,desc} = createTaskDto;
-    const task: Task = {
-      id: uuid(),
-      title,
-      desc,
-      status: TaskStatus.OPEN,
-    }
-    this.tasks.push(task);
-    return task;
-  }
 
-  getTaskById(id: string): Task {
-    const found =  this.tasks.find(task=> task.id === id);
+  async getTaskById(id: number): Promise<Task> {
+    const found = await this.taskRepository.findOne(id);
+
     if (!found) {
-      throw new NotFoundException();
+      throw new NotFoundException(`Task with ID ${id} not found`);
     }
+
     return found;
   }
 
-  deleteTaskById(id: string): void {
-    const found = this.getTaskById(id);
-    this.tasks = this.tasks.filter(task => task.id !== found.id);
+//  private tasks: Task[] = [];
+
+  // getAllTasts(): Task[] {
+  //   return this.tasks;
+  // }
+
+  async createTask(
+    createTaskDto: CreateTaskDto
+  ): Promise<Task> {
+    return this.taskRepository.createTask(createTaskDto);
   }
 
-  updateTaskStatus(id: string, status: TaskStatus): Task{
-    const task = this.getTaskById(id);
-    task.status = status;
-    return task;
-  }
+
+  // deleteTaskById(id: string): void {
+  //   const found = this.getTaskById(id);
+  //   this.tasks = this.tasks.filter(task => task.id !== found.id);
+  // }
+
+  // updateTaskStatus(id: string, status: TaskStatus): Task{
+  //   const task = this.getTaskById(id);
+  //   task.status = status;
+  //   return task;
+  // }
 }
