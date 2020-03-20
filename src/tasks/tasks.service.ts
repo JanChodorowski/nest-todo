@@ -6,15 +6,20 @@ import { Task } from './task.entity'
 // import { Repository } from 'typeorm';
 // import { TaskStatus } from './types/taskStatus';
 import { TaskRepository } from './tasks.repository';
+import { TaskStatus } from './types/taskStatus';
+import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 
 @Injectable()
 export class TasksService {
-
   constructor(
      @InjectRepository(TaskRepository)
      private taskRepository: TaskRepository,
   ){}
 
+    async getAllTasts(filterDto: GetTasksFilterDto): Promise<Array<Task>> {
+      // return this.tasks;
+      return this.taskRepository.getTasks(filterDto);
+    }
 
   async getTaskById(id: number): Promise<Task> {
     const found = await this.taskRepository.findOne(id);
@@ -22,15 +27,8 @@ export class TasksService {
     if (!found) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
-
     return found;
   }
-
-//  private tasks: Task[] = [];
-
-  // getAllTasts(): Task[] {
-  //   return this.tasks;
-  // }
 
   async createTask(
     createTaskDto: CreateTaskDto
@@ -38,15 +36,18 @@ export class TasksService {
     return this.taskRepository.createTask(createTaskDto);
   }
 
+  async deleteTaskById(id: number): Promise<void> {
+    const result = await this.taskRepository.delete(id);
 
-  // deleteTaskById(id: string): void {
-  //   const found = this.getTaskById(id);
-  //   this.tasks = this.tasks.filter(task => task.id !== found.id);
-  // }
+    if (result.affected === 0) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+  }
 
-  // updateTaskStatus(id: string, status: TaskStatus): Task{
-  //   const task = this.getTaskById(id);
-  //   task.status = status;
-  //   return task;
-  // }
+  async updateTaskStatus(id:number, status: TaskStatus): Promise<Task>  {
+    const result = await this.getTaskById(id);
+    result.status = status;
+    await result.save();
+    return result;
+  }
 }
